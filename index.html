@@ -76,9 +76,37 @@
         <div class="relative z-10 text-center">
             <h1 class="text-3xl font-bold mb-2">FinTrack Pro</h1>
             <p class="text-gray-400 text-sm mb-6">Sign in to manage your wealth.</p>
-            <button id="google-login-btn" class="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-3">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5"> Continue with Google
-            </button>
+            
+            <div class="flex gap-2 mb-4 bg-black/40 p-1 rounded-xl">
+                <button onclick="switchAuth('email')" id="tab-email" class="flex-1 py-2 rounded-lg text-xs font-bold bg-gray-800 text-white transition">Email</button>
+                <button onclick="switchAuth('phone')" id="tab-phone" class="flex-1 py-2 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition">Phone</button>
+            </div>
+
+            <div class="space-y-3">
+                <button id="google-login-btn" class="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-3">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5"> Continue with Google
+                </button>
+                
+                <form id="email-auth-form" class="space-y-3" onsubmit="return false;">
+                    <input type="email" id="auth-email" placeholder="Email address" class="w-full bg-[#0b0b0f]/50 border border-gray-700 text-white rounded-xl p-3 text-sm focus:border-purple-500 outline-none transition">
+                    <input type="password" id="auth-pass" placeholder="Password" class="w-full bg-[#0b0b0f]/50 border border-gray-700 text-white rounded-xl p-3 text-sm focus:border-purple-500 outline-none transition">
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <button type="button" id="email-login-btn" class="bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 rounded-xl transition border border-gray-600">Log In</button>
+                        <button type="button" id="email-signup-btn" class="bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 rounded-xl transition">Sign Up</button>
+                    </div>
+                </form>
+
+                <form id="phone-auth-form" class="space-y-3 hidden" onsubmit="return false;">
+                    <div id="phone-step-1">
+                        <input type="tel" id="phone-number" placeholder="+91..." class="w-full bg-[#0b0b0f]/50 border border-gray-700 text-white rounded-xl p-3 text-sm focus:border-purple-500 outline-none transition mb-3">
+                        <button type="button" id="send-otp-btn" class="w-full bg-green-600 hover:bg-green-500 text-white font-semibold py-3 rounded-xl transition">Send OTP</button>
+                    </div>
+                    <div id="phone-step-2" class="hidden">
+                        <input type="text" id="otp-input" placeholder="123456" class="w-full bg-[#0b0b0f]/50 border border-gray-700 text-white rounded-xl p-3 text-center text-lg tracking-widest focus:border-purple-500 outline-none transition mb-3">
+                        <button type="button" id="verify-otp-btn" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 rounded-xl transition">Verify & Login</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
   </div>
@@ -100,9 +128,11 @@
             </a>
 
             <button onclick="toggleUPI()" class="flex items-center gap-2 text-xs font-bold bg-teal-500 hover:bg-teal-400 text-black px-4 py-2 rounded-full shadow-[0_0_15px_rgba(20,184,166,0.4)]">
-                <i class="fa-solid fa-qrcode"></i> UPI
+                <i class="fa-solid fa-qrcode"></i>
+                <span class="hidden sm:inline">UPI</span>
             </button>
             
+            <button onclick="downloadCSV()" class="text-xs bg-gray-800 border border-gray-700 px-4 py-2 rounded-full hover:bg-gray-700 transition"><i class="fa-solid fa-download"></i> CSV</button>
             <button onclick="signOut(auth)" class="text-xs text-red-400 border border-gray-700 px-3 py-2 rounded-full">Logout</button>
         </div>
     </div>
@@ -136,10 +166,19 @@
                             <option value="expense">Expense</option><option value="income">Income</option>
                         </select>
                     </div>
+                    
                     <select id="category" class="w-full bg-[#0b0b0f] border border-gray-700 text-white rounded-lg p-3 text-sm outline-none">
-                        <option value="Food">🍔 Food</option><option value="Travel">🚕 Travel</option>
-                        <option value="Shopping">🛍️ Shopping</option><option value="Other">📦 Other</option>
+                        <option value="Pocket Money">💰 Pocket Money</option>
+                        <option value="Food">🍔 Food</option>
+                        <option value="Travel">🚕 Travel</option>
+                        <option value="Shopping">🛍️ Shopping</option>
+                        <option value="Recharge">📱 Recharge</option>
+                        <option value="Bills">🧾 Bills</option>
+                        <option value="Entertainment">🎬 Entertainment</option>
+                        <option value="Freelance">💻 Freelance</option>
+                        <option value="Other">📦 Other</option>
                     </select>
+                    
                     <button class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 rounded-lg shadow-lg">Add</button>
                 </form>
             </div>
@@ -162,7 +201,6 @@
             <div class="glass-panel p-6 rounded-2xl min-h-[400px]">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold">Transactions</h3>
-                    
                     <select id="date-filter" onchange="updateUI()" class="bg-[#0b0b0f] border border-gray-700 text-xs text-white rounded-lg px-3 py-1 outline-none">
                         <option value="all">All Time</option>
                         <option value="month">This Month</option>
@@ -186,7 +224,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -203,10 +241,17 @@
     const db = getFirestore(app);
     const googleProvider = new GoogleAuthProvider();
 
-    // GLOBAL VARIABLES
     let allTransactions = [];
     window.auth = auth;
     window.signOut = signOut;
+
+    // AUTH SWAP LOGIC
+    window.switchAuth = (type) => {
+        document.getElementById('email-auth-form').classList.toggle('hidden', type !== 'email');
+        document.getElementById('phone-auth-form').classList.toggle('hidden', type !== 'phone');
+        document.getElementById('tab-email').className = type === 'email' ? 'flex-1 py-2 rounded-lg text-xs font-bold bg-gray-800 text-white transition' : 'flex-1 py-2 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition';
+        document.getElementById('tab-phone').className = type === 'phone' ? 'flex-1 py-2 rounded-lg text-xs font-bold bg-gray-800 text-white transition' : 'flex-1 py-2 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition';
+    }
 
     onAuthStateChanged(auth, (user) => {
         const authView = document.getElementById('auth-view');
@@ -222,6 +267,13 @@
     });
 
     document.getElementById('google-login-btn').addEventListener('click', () => signInWithPopup(auth, googleProvider));
+    document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+    document.getElementById('email-login-btn').addEventListener('click', () => {
+        signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value).catch(e => alert(e.message));
+    });
+    document.getElementById('email-signup-btn').addEventListener('click', () => {
+        createUserWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value).then(() => alert("Account Created!")).catch(e => alert(e.message));
+    });
 
     function loadData(user) {
         const q = query(collection(db, "transactions"), where("uid", "==", user.uid), orderBy("date", "desc"));
@@ -231,14 +283,21 @@
         });
     }
 
-    // --- MAIN LOGIC (INCLUDES FILTERS & BUDGET) ---
+    // --- MAIN LOGIC (UPDATED WITH ICONS & FILTER) ---
+    function getIcon(c) {
+        const icons = {
+            'Pocket Money': '💰', 'Food': '🍔', 'Travel': '🚕', 'Shopping': '🛍️',
+            'Recharge': '📱', 'Bills': '🧾', 'Entertainment': '🎬', 'Freelance': '💻', 'Other': '📦'
+        };
+        return icons[c] || '📦';
+    }
+
     window.updateUI = () => {
         const filter = document.getElementById('date-filter').value;
         const budget = parseFloat(document.getElementById('budget-limit').value) || 0;
         const list = document.getElementById('list');
         list.innerHTML = '';
 
-        // 1. FILTER LOGIC
         let displayData = allTransactions;
         const now = new Date();
         if(filter === 'month') {
@@ -251,15 +310,20 @@
         document.getElementById('empty-state').classList.toggle('hidden', displayData.length > 0);
 
         let total = 0, inc = 0, exp = 0;
+        const categories = {};
 
         displayData.forEach(t => {
             total += t.amount;
             if(t.amount > 0) inc += t.amount; else exp += t.amount;
+            if(t.amount < 0) categories[t.category] = (categories[t.category] || 0) + Math.abs(t.amount);
 
             const color = t.amount < 0 ? 'text-expense' : 'text-income';
             list.innerHTML += `
-                <li class="flex justify-between bg-[#0b0b0f] p-3 rounded-lg border-l-4 ${t.amount<0?'border-red-500':'border-green-500'}">
-                    <div><p class="font-bold text-sm">${t.text}</p><p class="text-[10px] text-gray-500">${t.dateDisplay}</p></div>
+                <li class="flex justify-between items-center bg-[#0b0b0f] p-3 rounded-lg border-l-4 ${t.amount<0?'border-red-500':'border-green-500'}">
+                    <div class="flex items-center gap-3">
+                        <div class="h-8 w-8 rounded-full bg-gray-800 flex items-center justify-center text-sm">${getIcon(t.category)}</div>
+                        <div><p class="font-bold text-sm">${t.text}</p><p class="text-[10px] text-gray-500">${t.dateDisplay}</p></div>
+                    </div>
                     <div><span class="${color} font-bold text-sm">₹${Math.abs(t.amount)}</span>
                     <button onclick="deleteTransaction('${t.id}')" class="text-[10px] text-red-400 block text-right">Del</button></div>
                 </li>`;
@@ -269,7 +333,7 @@
         document.getElementById('money-plus').innerText = `+₹${inc.toFixed(2)}`;
         document.getElementById('money-minus').innerText = `-₹${Math.abs(exp).toFixed(2)}`;
 
-        // 2. BUDGET ALERT LOGIC
+        // Budget Alert
         const card = document.getElementById('balance-card');
         const alertMsg = document.getElementById('budget-alert');
         if(Math.abs(exp) > budget && budget > 0) {
@@ -279,7 +343,21 @@
             card.classList.remove('budget-warning');
             alertMsg.classList.add('hidden');
         }
+        updateChart(categories);
     };
+
+    function updateChart(data) {
+        const ctx = document.getElementById('expenseChart').getContext('2d');
+        if(chart) chart.destroy();
+        chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(data),
+                datasets: [{ data: Object.values(data), backgroundColor: ['#a855f7', '#ec4899', '#3b82f6', '#10b981', '#f59e0b'], borderWidth: 0 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '70%' }
+        });
+    }
 
     document.getElementById('form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -300,7 +378,6 @@
 
     window.deleteTransaction = async (id) => await deleteDoc(doc(db, "transactions", id));
 
-    // --- SPLIT BILL LOGIC ---
     window.calculateSplit = () => {
         const total = parseFloat(document.getElementById('split-total').value);
         const people = parseInt(document.getElementById('split-people').value);
@@ -314,18 +391,23 @@
         window.open(`https://wa.me/?text=Split Bill: We each owe ${amt}`, '_blank');
     }
     window.toggleUPI = () => document.getElementById('upi-modal').classList.toggle('hidden');
+    window.downloadCSV = () => {
+        let csv = "Description,Amount,Date\n" + allTransactions.map(t => `${t.text},${t.amount},${t.dateDisplay}`).join("\n");
+        const a = document.createElement('a'); a.href = encodeURI("data:text/csv;charset=utf-8,"+csv); a.download="data.csv"; a.click();
+    };
+    window.filterList = () => {
+        const term = document.getElementById('search').value.toLowerCase();
+        document.querySelectorAll('li').forEach(el => el.style.display = el.innerText.toLowerCase().includes(term) ? 'flex' : 'none');
+    };
 
-    // --- PWA SERVICE WORKER REGISTRATION ---
-    // Make sure you created manifest.json and sw.js files for this to work!
+    // PWA
     let deferredPrompt;
     const installBtn = document.getElementById('install-btn');
-
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        installBtn.classList.remove('hidden'); // Show install button
+        installBtn.classList.remove('hidden');
     });
-
     installBtn.addEventListener('click', async () => {
         if (!deferredPrompt) return;
         deferredPrompt.prompt();
@@ -333,10 +415,7 @@
         deferredPrompt = null;
         installBtn.classList.add('hidden');
     });
-
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-    }
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
   </script>
 </body>
 </html>
