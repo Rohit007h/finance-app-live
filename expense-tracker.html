@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinTrack Pro | Secure Login</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Outfit', 'sans-serif'] },
+          colors: {
+            glass: "rgba(255, 255, 255, 0.05)",
+            glassBorder: "rgba(255, 255, 255, 0.1)",
+            income: "#10b981",
+            expense: "#ef4444"
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #000;
+      background-image: 
+        radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+        radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+        radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+      color: white;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    .glass-panel {
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glassBorder);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0b0b0f; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    
+    /* View Transitions */
+    .view-hidden { display: none !important; }
+    .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 50; }
+    .toast { transform: translateX(100%); animation: slideIn 0.3s forwards, fadeOut 0.5s 2.5s forwards; }
+    @keyframes slideIn { to { transform: translateX(0); } }
+    @keyframes fadeOut { to { opacity: 0; transform: translateY(-10px); } }
+  </style>
+</head>
+
+<body class="flex flex-col items-center justify-center min-h-screen">
+
+  <div id="toast-container" class="flex flex-col gap-2"></div>
+  <div id="recaptcha-container"></div>
+
+  <div id="auth-view" class="w-full max-w-md p-6 fade-in">
+    <div class="glass-panel p-8 rounded-3xl border border-purple-500/30 relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-600 rounded-full blur-[60px] opacity-40"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-600 rounded-full blur-[60px] opacity-40"></div>
+
+        <div class="relative z-10 text-center">
+            <div class="w-16 h-16 bg-gradient-to-tr from-purple-500 to-pink-500 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-lg shadow-purple-500/20">
+                <i class="fa-solid fa-wallet text-2xl text-white"></i>
+            </div>
+            <h1 class="text-3xl font-bold mb-2">FinTrack Pro</h1>
+            <p class="text-gray-400 text-sm mb-6">Sign in to sync your expenses.</p>
+
+            <div class="flex gap-2 mb-4 bg-black/40 p-1 rounded-xl">
+                <button onclick="switchAuth('email')" id="tab-email" class="flex-1 py-2 rounded-lg text-xs font-bold bg-gray-800 text-white transition">Email</button>
+                <button onclick="switchAuth('phone')" id="tab-phone" class="flex-1 py-2 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition">Phone</button>
+            </div>
+
+            <div class="space-y-3">
+                <button id="google-login-btn" class="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-3">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5"> 
+                    Continue with Google
+                </button>
+                
+                <div class="relative py-2">
+                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-700"></div></div>
+                    <div class="relative flex justify-center text-xs uppercase"><span class="bg-[#0b0b0f] px-2 text-gray-500">Or</span></div>
+                </div>
+
+                <form id="email-auth-form" class="space-y-3" onsubmit="return false;">
+                    <input type="email" id="auth-email" placeholder="Email address" class="w-full bg-[#0b0b0f]/50 border border-gray-700 text-white rounded-xl p-3 text-sm focus:border-purple-500 outline-none transition">
+                    <input type="password" id="auth-pass" placeholder="Password" class="w-full bg-[#0b0b0f]/50 border border-gray-700 text-white rounded-xl p-3 text-sm focus:border-purple-500 outline-none transition">
+                    
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <button type="button" id="email-login-btn" class="bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 rounded-xl transition border border-gray-600">Log In</button>
+                        <button type="button" id="email-signup-btn" class="bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 rounded-xl transition">Sign Up</button>
+                    </div>
+                </form>
+
+                <form id="phone-auth-form" class="space-y-3 hidden" onsubmit="return false;">
+                    <div id="phone-step-1">
+                        <label class="block text-left text-xs text-gray-400 mb-1 ml-1">Format: +919876543210</label>
+                        <input type="tel" id="phone-number" placeholder="+91..." class="w-full bg-[#0b0b0f]/50 border border-gray-700 text-white rounded-xl p-3 text-sm focus:border-purple-500 outline-none transition mb-3">
+                        <button type="button" id="send-otp-btn" class="w-full bg-green-600 hover:bg-green-500 text-white font-semibold py-3 rounded-xl transition">Send OTP</button>
+                    </div>
+
+                    <div id="phone-step-2" class="hidden">
+                        <p class="text-xs text-gray-400 mb-2">Enter the code sent to your phone</p>
+                        <input type="text" id="otp-input" placeholder="123456" class="w-full bg-[#0b0b0f]/50 border border-gray-700 text-white rounded-xl p-3 text-center text-lg tracking-widest focus:border-purple-500 outline-none transition mb-3">
+                        <button type="button" id="verify-otp-btn" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 rounded-xl transition">Verify & Login</button>
+                    </div>
+                </form>
+            </div>
+            
+            <p class="text-[10px] text-gray-500 mt-6">By continuing, you agree to our Terms & Privacy Policy.</p>
+        </div>
+    </div>
+  </div>
+
+  <div id="app-view" class="w-full max-w-6xl p-4 md:p-8 view-hidden fade-in">
+    
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div class="flex items-center gap-4">
+            <a href="index.html" class="flex items-center gap-2 text-gray-400 hover:text-white transition"><i class="fa-solid fa-arrow-left"></i></a>
+            <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">FinTrack <span class="text-xs border border-purple-500 px-2 py-0.5 rounded text-white ml-2">PRO</span></h1>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 bg-glass px-4 py-2 rounded-full border border-glassBorder">
+                <img id="user-avatar" src="" class="w-6 h-6 rounded-full border border-gray-500">
+                <span id="user-display-name" class="text-xs font-bold hidden md:block">User</span>
+                <button id="logout-btn" class="text-xs text-red-400 hover:text-white ml-2 border-l border-gray-700 pl-3"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+
+            <a href="https://www.buymeacoffee.com/YOUR_USERNAME" target="_blank" 
+               class="flex items-center gap-2 text-xs font-bold bg-[#FFDD00] hover:bg-[#ffc400] text-black px-4 py-2 rounded-full transition transform hover:scale-105 shadow-[0_0_15px_rgba(255,221,0,0.4)]">
+                <i class="fa-solid fa-mug-hot"></i>
+                <span class="hidden sm:inline">Support</span>
+            </a>
+
+            <button onclick="downloadCSV()" class="text-xs bg-gray-800 border border-gray-700 px-4 py-2 rounded-full hover:bg-gray-700 transition flex items-center gap-2"><i class="fa-solid fa-download"></i> CSV</button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="lg:col-span-1 space-y-6">
+            <div class="glass-panel p-6 rounded-2xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+                <p class="text-gray-400 text-sm uppercase tracking-wider">Total Balance</p>
+                <h2 id="balance" class="text-4xl font-bold mt-2 text-white">₹ 0.00</h2>
+                <div class="flex justify-between mt-6 pt-4 border-t border-white/10">
+                    <div><p class="text-xs text-gray-400">Income</p><p id="money-plus" class="text-income font-semibold">+₹0.00</p></div>
+                    <div><p class="text-xs text-gray-400">Expense</p><p id="money-minus" class="text-expense font-semibold">-₹0.00</p></div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl">
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2"><i class="fa-solid fa-circle-plus text-purple-400"></i> New Transaction</h3>
+                <form id="form" class="space-y-4">
+                    <input type="text" id="text" placeholder="Description" class="w-full bg-[#0b0b0f] border border-gray-700 text-white rounded-lg p-3 text-sm focus:border-purple-500 outline-none">
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="number" id="amount" placeholder="Amount" class="w-full bg-[#0b0b0f] border border-gray-700 text-white rounded-lg p-3 text-sm focus:border-purple-500 outline-none">
+                        <select id="type" class="w-full bg-[#0b0b0f] border border-gray-700 text-white rounded-lg p-3 text-sm outline-none">
+                            <option value="expense">Expense</option>
+                            <option value="income">Income</option>
+                        </select>
+                    </div>
+                    <select id="category" class="w-full bg-[#0b0b0f] border border-gray-700 text-white rounded-lg p-3 text-sm outline-none">
+                        <option value="Pocket Money">💰 Pocket Money</option>
+                        <option value="Food">🍔 Food</option>
+                        <option value="Travel">🚕 Travel</option>
+                        <option value="Shopping">🛍️ Shopping</option>
+                        <option value="Recharge">📱 Recharge</option>
+                        <option value="Bills">🧾 Bills</option>
+                        <option value="Entertainment">🎬 Entertainment</option>
+                        <option value="Freelance">💻 Freelance</option>
+                        <option value="Other">📦 Other</option>
+                    </select>
+                    <button class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white font-bold py-3 rounded-lg shadow-lg transition">Add Transaction</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6">
+            <div class="glass-panel p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div class="w-full sm:w-1/2">
+                    <h3 class="text-lg font-semibold mb-1">Spending Analytics</h3>
+                    <p class="text-xs text-gray-400">Visual breakdown of your expenses.</p>
+                </div>
+                <div class="h-32 w-32 relative"><canvas id="expenseChart"></canvas></div>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl min-h-[400px]">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Transactions</h3>
+                    <div class="relative">
+                        <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-xs"></i>
+                        <input type="text" id="search" placeholder="Search..." onkeyup="filterList()" class="bg-[#0b0b0f] border border-gray-700 text-xs text-white rounded-full pl-8 pr-4 py-2 outline-none focus:border-purple-500 w-32 focus:w-48 transition-all">
+                    </div>
+                </div>
+                <ul id="list" class="space-y-3"></ul>
+                <div id="empty-state" class="hidden text-center text-gray-500 mt-10">
+                    <i class="fa-regular fa-folder-open text-4xl mb-3 opacity-50"></i>
+                    <p class="text-xs">No transactions yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+    import { getAuth, GoogleAuthProvider, RecaptchaVerifier, signInWithPopup, signInWithPhoneNumber, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // YOUR CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyBay1fKl79jdAQEPgrmDPEDk_EE41nZLKw",
+      authDomain: "fintrack-pro-cd015.firebaseapp.com",
+      projectId: "fintrack-pro-cd015",
+      storageBucket: "fintrack-pro-cd015.firebasestorage.app",
+      messagingSenderId: "796478831338",
+      appId: "1:796478831338:web:12b62b96939b304a08f593",
+      measurementId: "G-QDTDT2WKNF"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    // Elements
+    const authView = document.getElementById('auth-view');
+    const appView = document.getElementById('app-view');
+    
+    // UI Helpers
+    window.switchAuth = (type) => {
+        const emailForm = document.getElementById('email-auth-form');
+        const phoneForm = document.getElementById('phone-auth-form');
+        const tabEmail = document.getElementById('tab-email');
+        const tabPhone = document.getElementById('tab-phone');
+
+        if(type === 'email') {
+            emailForm.classList.remove('hidden');
+            phoneForm.classList.add('hidden');
+            tabEmail.classList.add('bg-gray-800', 'text-white');
+            tabEmail.classList.remove('text-gray-400');
+            tabPhone.classList.remove('bg-gray-800', 'text-white');
+            tabPhone.classList.add('text-gray-400');
+        } else {
+            emailForm.classList.add('hidden');
+            phoneForm.classList.remove('hidden');
+            tabPhone.classList.add('bg-gray-800', 'text-white');
+            tabPhone.classList.remove('text-gray-400');
+            tabEmail.classList.remove('bg-gray-800', 'text-white');
+            tabEmail.classList.add('text-gray-400');
+        }
+    }
+
+    // AUTH STATE HANDLER
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            authView.classList.add('view-hidden');
+            appView.classList.remove('view-hidden');
+            document.body.classList.remove('justify-center');
+            document.body.classList.add('justify-start');
+            
+            // Set User Info
+            document.getElementById('user-avatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${user.email || user.phoneNumber || 'User'}&background=random`;
+            document.getElementById('user-display-name').innerText = user.displayName || (user.email ? user.email.split('@')[0] : user.phoneNumber);
+            
+            loadFirestoreData(user);
+        } else {
+            authView.classList.remove('view-hidden');
+            appView.classList.add('view-hidden');
+            document.body.classList.add('justify-center');
+            document.body.classList.remove('justify-start');
+        }
+    });
+
+    // --- GOOGLE & EMAIL AUTH ---
+    document.getElementById('google-login-btn').addEventListener('click', () => signInWithPopup(auth, googleProvider).catch(e => alert(e.message)));
+    document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+    
+    document.getElementById('email-login-btn').addEventListener('click', () => {
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-pass').value;
+        signInWithEmailAndPassword(auth, email, pass).catch(e => alert(e.message));
+    });
+
+    document.getElementById('email-signup-btn').addEventListener('click', () => {
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-pass').value;
+        createUserWithEmailAndPassword(auth, email, pass).then(() => alert("Account Created!")).catch(e => alert(e.message));
+    });
+
+    // --- PHONE AUTH (ReCaptcha + OTP) ---
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response) => {
+            // reCAPTCHA solved
+        }
+    });
+
+    document.getElementById('send-otp-btn').addEventListener('click', () => {
+        const phoneNumber = document.getElementById('phone-number').value;
+        if(!phoneNumber) return alert("Enter valid phone number (+91...)");
+        
+        signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
+            .then((confirmationResult) => {
+                window.confirmationResult = confirmationResult;
+                document.getElementById('phone-step-1').classList.add('hidden');
+                document.getElementById('phone-step-2').classList.remove('hidden');
+                alert("OTP Sent!");
+            }).catch((error) => {
+                alert("Error Sending OTP: " + error.message);
+                window.recaptchaVerifier.render().then(function(widgetId) {
+                    grecaptcha.reset(widgetId);
+                });
+            });
+    });
+
+    document.getElementById('verify-otp-btn').addEventListener('click', () => {
+        const code = document.getElementById('otp-input').value;
+        window.confirmationResult.confirm(code).then((result) => {
+            alert("Phone Verified!");
+        }).catch((error) => {
+            alert("Invalid OTP");
+        });
+    });
+
+    // --- DATA LOGIC (Same as before) ---
+    let transactions = [];
+    let chart;
+
+    function loadFirestoreData(user) {
+        const q = query(collection(db, "transactions"), where("uid", "==", user.uid), orderBy("date", "desc"));
+        onSnapshot(q, (snapshot) => {
+            transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            updateUI();
+        });
+    }
+
+    document.getElementById('form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = document.getElementById('text').value;
+        const amount = document.getElementById('amount').value;
+        if(!text || !amount) return;
+
+        let amtValue = +amount;
+        if(document.getElementById('type').value === 'expense') amtValue = -Math.abs(amtValue);
+        else amtValue = Math.abs(amtValue);
+
+        await addDoc(collection(db, "transactions"), {
+            text, amount: amtValue, category: document.getElementById('category').value,
+            date: new Date().toISOString(),
+            dateDisplay: new Date().toLocaleDateString(),
+            uid: auth.currentUser.uid
+        });
+
+        document.getElementById('text').value = ''; 
+        document.getElementById('amount').value = '';
+    });
+
+    window.deleteTransaction = async (id) => {
+        if(confirm("Delete this transaction?")) await deleteDoc(doc(db, "transactions", id));
+    };
+
+    function updateUI() {
+        const list = document.getElementById('list');
+        list.innerHTML = '';
+        document.getElementById('empty-state').classList.toggle('hidden', transactions.length > 0);
+
+        let total = 0, inc = 0, exp = 0;
+        const categories = {};
+
+        transactions.forEach(t => {
+            total += t.amount;
+            if(t.amount > 0) inc += t.amount; else exp += t.amount;
+            if(t.amount < 0) categories[t.category] = (categories[t.category] || 0) + Math.abs(t.amount);
+
+            const sign = t.amount < 0 ? '-' : '+';
+            const color = t.amount < 0 ? 'text-expense' : 'text-income';
+            const border = t.amount < 0 ? 'border-red-500' : 'border-green-500';
+            const idParam = typeof t.id === 'string' ? `'${t.id}'` : t.id;
+
+            list.innerHTML += `
+                <li class="transaction-item flex justify-between items-center bg-[#0b0b0f] p-3 rounded-lg border-l-4 ${border} border-gray-800 hover:bg-[#15151e] transition">
+                    <div class="flex items-center gap-3">
+                        <div class="h-8 w-8 rounded-full bg-gray-800 flex items-center justify-center text-sm">${getIcon(t.category)}</div>
+                        <div><p class="font-bold text-sm">${t.text}</p><p class="text-[10px] text-gray-500">${t.category} • ${t.dateDisplay}</p></div>
+                    </div>
+                    <div class="text-right">
+                        <span class="${color} font-bold text-sm block">${sign}₹${Math.abs(t.amount)}</span>
+                        <button onclick="deleteTransaction(${idParam})" class="text-[10px] text-red-400 hover:text-white mt-1">Delete</button>
+                    </div>
+                </li>`;
+        });
+
+        document.getElementById('balance').innerText = `₹${total.toFixed(2)}`;
+        document.getElementById('money-plus').innerText = `+₹${inc.toFixed(2)}`;
+        document.getElementById('money-minus').innerText = `-₹${Math.abs(exp).toFixed(2)}`;
+
+        updateChart(categories);
+    }
+
+    function updateChart(data) {
+        const ctx = document.getElementById('expenseChart').getContext('2d');
+        if(chart) chart.destroy();
+        chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(data),
+                datasets: [{ data: Object.values(data), backgroundColor: ['#a855f7', '#ec4899', '#3b82f6', '#10b981', '#f59e0b'], borderWidth: 0 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '70%' }
+        });
+    }
+
+    function getIcon(c) { return {'Pocket Money':'💰','Food':'🍔','Travel':'🚕','Shopping':'🛍️','Recharge':'📱'}[c] || '📦'; }
+
+    window.downloadCSV = () => {
+        let csv = "Description,Amount,Date\n" + transactions.map(t => `${t.text},${t.amount},${t.dateDisplay}`).join("\n");
+        const a = document.createElement('a'); a.href = encodeURI("data:text/csv;charset=utf-8,"+csv); a.download="data.csv"; a.click();
+    };
+
+    window.filterList = () => {
+        const term = document.getElementById('search').value.toLowerCase();
+        document.querySelectorAll('.transaction-item').forEach(el => el.style.display = el.innerText.toLowerCase().includes(term) ? 'flex' : 'none');
+    };
+  </script>
+</body>
+</html>
