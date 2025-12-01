@@ -85,16 +85,24 @@
 
   <div id="app-view" class="w-full max-w-6xl p-4 md:p-8 view-hidden fade-in">
     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-        <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">FinTrack <span class="text-xs border border-purple-500 px-2 py-0.5 rounded text-white ml-2">PRO</span></h1>
+        <div class="flex items-center gap-4">
+            <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">FinTrack <span class="text-xs border border-purple-500 px-2 py-0.5 rounded text-white ml-2">PRO</span></h1>
+        </div>
         
         <div class="flex items-center gap-2">
             <button id="install-btn" class="hidden flex items-center gap-2 text-xs font-bold bg-blue-600 text-white px-4 py-2 rounded-full">
-                <i class="fa-solid fa-download"></i> Install App
+                <i class="fa-solid fa-download"></i> App
             </button>
+
+            <a href="https://www.buymeacoffee.com/rohit1518" target="_blank" class="flex items-center gap-2 text-xs font-bold bg-[#FFDD00] hover:bg-[#ffc400] text-black px-4 py-2 rounded-full shadow-[0_0_15px_rgba(255,221,0,0.4)]">
+                <i class="fa-solid fa-mug-hot"></i>
+                <span class="hidden sm:inline">Support</span>
+            </a>
 
             <button onclick="toggleUPI()" class="flex items-center gap-2 text-xs font-bold bg-teal-500 hover:bg-teal-400 text-black px-4 py-2 rounded-full shadow-[0_0_15px_rgba(20,184,166,0.4)]">
                 <i class="fa-solid fa-qrcode"></i> UPI
             </button>
+            
             <button onclick="signOut(auth)" class="text-xs text-red-400 border border-gray-700 px-3 py-2 rounded-full">Logout</button>
         </div>
     </div>
@@ -308,6 +316,24 @@
     window.toggleUPI = () => document.getElementById('upi-modal').classList.toggle('hidden');
 
     // --- PWA SERVICE WORKER REGISTRATION ---
+    // Make sure you created manifest.json and sw.js files for this to work!
+    let deferredPrompt;
+    const installBtn = document.getElementById('install-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.classList.remove('hidden'); // Show install button
+    });
+
+    installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        installBtn.classList.add('hidden');
+    });
+
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js');
     }
