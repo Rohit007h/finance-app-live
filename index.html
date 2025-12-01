@@ -40,7 +40,6 @@
       min-height: 100vh;
       overflow-x: hidden;
     }
-    
     .glass-panel {
       background: var(--glass);
       backdrop-filter: blur(16px);
@@ -49,8 +48,6 @@
       box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
       transition: all 0.3s ease;
     }
-
-    /* Warning Animation for Budget Limit */
     .budget-warning {
         border: 2px solid #ef4444 !important;
         animation: pulse-red 2s infinite;
@@ -60,7 +57,6 @@
         70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
         100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
     }
-    
     .view-hidden { display: none !important; }
     .fade-in { animation: fadeIn 0.5s ease-out forwards; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -76,17 +72,14 @@
         <div class="relative z-10 text-center">
             <h1 class="text-3xl font-bold mb-2">FinTrack Pro</h1>
             <p class="text-gray-400 text-sm mb-6">Sign in to manage your wealth.</p>
-            
             <div class="flex gap-2 mb-4 bg-black/40 p-1 rounded-xl">
                 <button onclick="switchAuth('email')" id="tab-email" class="flex-1 py-2 rounded-lg text-xs font-bold bg-gray-800 text-white transition">Email</button>
                 <button onclick="switchAuth('phone')" id="tab-phone" class="flex-1 py-2 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition">Phone</button>
             </div>
-
             <div class="space-y-3">
                 <button id="google-login-btn" class="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-3">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5"> Continue with Google
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5"> Google
                 </button>
-                
                 <form id="email-auth-form" class="space-y-3" onsubmit="return false;">
                     <input type="email" id="auth-email" placeholder="Email address" class="w-full bg-[#0b0b0f]/50 border border-gray-700 text-white rounded-xl p-3 text-sm focus:border-purple-500 outline-none transition">
                     <input type="password" id="auth-pass" placeholder="Password" class="w-full bg-[#0b0b0f]/50 border border-gray-700 text-white rounded-xl p-3 text-sm focus:border-purple-500 outline-none transition">
@@ -95,7 +88,6 @@
                         <button type="button" id="email-signup-btn" class="bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 rounded-xl transition">Sign Up</button>
                     </div>
                 </form>
-
                 <form id="phone-auth-form" class="space-y-3 hidden" onsubmit="return false;">
                     <div id="phone-step-1">
                         <input type="tel" id="phone-number" placeholder="+91..." class="w-full bg-[#0b0b0f]/50 border border-gray-700 text-white rounded-xl p-3 text-sm focus:border-purple-500 outline-none transition mb-3">
@@ -118,19 +110,9 @@
         </div>
         
         <div class="flex items-center gap-2">
-            <button id="install-btn" class="hidden flex items-center gap-2 text-xs font-bold bg-blue-600 text-white px-4 py-2 rounded-full">
-                <i class="fa-solid fa-download"></i> App
-            </button>
-
-            <a href="https://www.buymeacoffee.com/rohit1518" target="_blank" class="flex items-center gap-2 text-xs font-bold bg-[#FFDD00] hover:bg-[#ffc400] text-black px-4 py-2 rounded-full shadow-[0_0_15px_rgba(255,221,0,0.4)]">
-                <i class="fa-solid fa-mug-hot"></i>
-                <span class="hidden sm:inline">Support</span>
-            </a>
-
-            <button onclick="toggleUPI()" class="flex items-center gap-2 text-xs font-bold bg-teal-500 hover:bg-teal-400 text-black px-4 py-2 rounded-full shadow-[0_0_15px_rgba(20,184,166,0.4)]">
-                <i class="fa-solid fa-qrcode"></i>
-                <span class="hidden sm:inline">UPI</span>
-            </button>
+            <button id="install-btn" class="hidden flex items-center gap-2 text-xs font-bold bg-blue-600 text-white px-4 py-2 rounded-full"><i class="fa-solid fa-download"></i> App</button>
+            <a href="https://www.buymeacoffee.com/rohit1518" target="_blank" class="flex items-center gap-2 text-xs font-bold bg-[#FFDD00] hover:bg-[#ffc400] text-black px-4 py-2 rounded-full shadow-[0_0_15px_rgba(255,221,0,0.4)]"><i class="fa-solid fa-mug-hot"></i> Support</a>
+            <button onclick="toggleUPI()" class="flex items-center gap-2 text-xs font-bold bg-teal-500 hover:bg-teal-400 text-black px-4 py-2 rounded-full shadow-[0_0_15px_rgba(20,184,166,0.4)]"><i class="fa-solid fa-qrcode"></i> UPI</button>
             
             <button onclick="downloadCSV()" class="text-xs bg-gray-800 border border-gray-700 px-4 py-2 rounded-full hover:bg-gray-700 transition"><i class="fa-solid fa-download"></i> CSV</button>
             <button onclick="signOut(auth)" class="text-xs text-red-400 border border-gray-700 px-3 py-2 rounded-full">Logout</button>
@@ -139,7 +121,6 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-1 space-y-6">
-            
             <div id="balance-card" class="glass-panel p-6 rounded-2xl relative overflow-hidden">
                 <p class="text-gray-400 text-sm uppercase tracking-wider">Total Balance</p>
                 <h2 id="balance" class="text-4xl font-bold mt-2 text-white">₹ 0.00</h2>
@@ -166,7 +147,6 @@
                             <option value="expense">Expense</option><option value="income">Income</option>
                         </select>
                     </div>
-                    
                     <select id="category" class="w-full bg-[#0b0b0f] border border-gray-700 text-white rounded-lg p-3 text-sm outline-none">
                         <option value="Pocket Money">💰 Pocket Money</option>
                         <option value="Food">🍔 Food</option>
@@ -178,7 +158,6 @@
                         <option value="Freelance">💻 Freelance</option>
                         <option value="Other">📦 Other</option>
                     </select>
-                    
                     <button class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 rounded-lg shadow-lg">Add</button>
                 </form>
             </div>
@@ -209,6 +188,14 @@
                 <ul id="list" class="space-y-3"></ul>
                 <div id="empty-state" class="hidden text-center text-gray-500 mt-10"><p class="text-xs">No transactions found.</p></div>
             </div>
+            
+            <div class="glass-panel p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div class="w-full sm:w-1/2">
+                    <h3 class="text-lg font-semibold mb-1">Spending Analytics</h3>
+                    <p class="text-xs text-gray-400">Visual breakdown of your expenses.</p>
+                </div>
+                <div class="h-32 w-32 relative"><canvas id="expenseChart"></canvas></div>
+            </div>
         </div>
     </div>
   </div>
@@ -224,7 +211,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -245,7 +232,7 @@
     window.auth = auth;
     window.signOut = signOut;
 
-    // AUTH SWAP LOGIC
+    // AUTH SWITCHER
     window.switchAuth = (type) => {
         document.getElementById('email-auth-form').classList.toggle('hidden', type !== 'email');
         document.getElementById('phone-auth-form').classList.toggle('hidden', type !== 'phone');
@@ -268,6 +255,7 @@
 
     document.getElementById('google-login-btn').addEventListener('click', () => signInWithPopup(auth, googleProvider));
     document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+    
     document.getElementById('email-login-btn').addEventListener('click', () => {
         signInWithEmailAndPassword(auth, document.getElementById('auth-email').value, document.getElementById('auth-pass').value).catch(e => alert(e.message));
     });
@@ -283,7 +271,7 @@
         });
     }
 
-    // --- MAIN LOGIC (UPDATED WITH ICONS & FILTER) ---
+    // MAIN LOGIC
     function getIcon(c) {
         const icons = {
             'Pocket Money': '💰', 'Food': '🍔', 'Travel': '🚕', 'Shopping': '🛍️',
@@ -361,34 +349,45 @@
 
     document.getElementById('form').addEventListener('submit', async (e) => {
         e.preventDefault();
+        if(!auth.currentUser) return alert("Please sign in first!"); // CHECK LOGIN
+        
         const text = document.getElementById('text').value;
         const amount = document.getElementById('amount').value;
-        if(!text || !amount) return;
+        if(!text || !amount) return alert("Please enter description and amount!");
+
         let amtValue = +amount;
         if(document.getElementById('type').value === 'expense') amtValue = -Math.abs(amtValue);
 
-        await addDoc(collection(db, "transactions"), {
-            text, amount: amtValue, category: document.getElementById('category').value,
-            date: new Date().toISOString(),
-            dateDisplay: new Date().toLocaleDateString(),
-            uid: auth.currentUser.uid
-        });
-        document.getElementById('text').value = ''; document.getElementById('amount').value = '';
+        try {
+            await addDoc(collection(db, "transactions"), {
+                text, amount: amtValue, category: document.getElementById('category').value,
+                date: new Date().toISOString(),
+                dateDisplay: new Date().toLocaleDateString(),
+                uid: auth.currentUser.uid
+            });
+            document.getElementById('text').value = ''; document.getElementById('amount').value = '';
+        } catch(e) {
+            alert("Error adding transaction: " + e.message);
+        }
     });
 
-    window.deleteTransaction = async (id) => await deleteDoc(doc(db, "transactions", id));
+    window.deleteTransaction = async (id) => {
+        if(confirm("Delete this?")) await deleteDoc(doc(db, "transactions", id));
+    };
 
+    // SPLIT BILL LOGIC (Fixed)
     window.calculateSplit = () => {
         const total = parseFloat(document.getElementById('split-total').value);
         const people = parseInt(document.getElementById('split-people').value);
-        if(!total || !people) return;
+        if(!total || !people) return alert("Enter Bill Amount and People count!");
+        
         document.getElementById('split-amount').innerText = `₹${(total/people).toFixed(2)}`;
         document.getElementById('split-result').classList.remove('hidden');
     }
     
     window.shareWhatsapp = () => {
         const amt = document.getElementById('split-amount').innerText;
-        window.open(`https://wa.me/?text=Split Bill: We each owe ${amt}`, '_blank');
+        window.open(`https://wa.me/?text=Split Bill: We each owe ${amt} (Calculated via FinTrack)`, '_blank');
     }
     window.toggleUPI = () => document.getElementById('upi-modal').classList.toggle('hidden');
     window.downloadCSV = () => {
@@ -400,7 +399,7 @@
         document.querySelectorAll('li').forEach(el => el.style.display = el.innerText.toLowerCase().includes(term) ? 'flex' : 'none');
     };
 
-    // PWA
+    // PWA Logic
     let deferredPrompt;
     const installBtn = document.getElementById('install-btn');
     window.addEventListener('beforeinstallprompt', (e) => {
